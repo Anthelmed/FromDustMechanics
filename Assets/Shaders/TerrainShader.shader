@@ -7,7 +7,7 @@
 		_BumpMap ("Normal Map", 2D) = "bump" {}
 		_HeightMap ("Height Map", 2D) = "white" {}
 		_OcclusionMap ("Occlusion", 2D) = "white" {}
-		_Amount ("Extrusion Amount", Range(1,10)) = 1.0
+		_Amount ("Extrusion Amount", Range(1,100)) = 1.0
     }
     SubShader {
       Tags { "RenderType" = "Opaque" }
@@ -36,7 +36,7 @@
 		float _Amount;
 
       void vert (inout appdata_full v) {
-          v.vertex.y += tex2Dlod(_HeightMap, float4(v.texcoord1.x, v.texcoord1.y, 0, 0)).r * _Amount ;
+          v.vertex.y = tex2Dlod(_HeightMap, float4(v.texcoord1.x, v.texcoord1.y, 0, 0)).r * _Amount - (_Amount / 2);
       }
 
       void surf (Input IN, inout SurfaceOutputStandard o) {

@@ -8,16 +8,31 @@ public class NoiseMapPainter : MonoBehaviour {
 	public RenderTexture canvasTexture; // Render Texture that looks at our Base Texture and the painted brushes
 	public Material baseMaterial; // The material of our base texture (Were we will save the painted texture)
 	public GameObject brushEntity;
+	public GameObject defaultHeightMap;
 
-	float brushSize=1.0f; //The size of our brush
+	float brushSize = 1.0f; //The size of our brush
 	Color brushColor = Color.white; //The selected color
-	int brushCounter=0,MAX_BRUSH_COUNT=1000; //To avoid having millions of brushes
+	int brushCounter=0,MAX_BRUSH_COUNT=1; //To avoid having millions of brushes
 	bool saving=false; //Flag to check if we are saving the texture
 
+	void Start () {
+		Invoke("SaveTexture",0.1f);
+	}
 
 	void Update () {
 		if (Input.GetMouseButton(0)) {
-			DoAction();
+			brushColor = Color.black;
+			if (GameController.getEntityScale() < GameController.getMaxEntityScale()) {
+				GameController.incrementEntityScale ();
+				DoAction();
+			}
+		}
+		if (Input.GetMouseButton(1)) {
+			brushColor = Color.white;
+			if (GameController.getEntityScale() > 0) {
+				GameController.decrementEntityScale ();
+				DoAction();
+			}
 		}
 		UpdateBrushCursor ();
 	}
@@ -31,7 +46,7 @@ public class NoiseMapPainter : MonoBehaviour {
 			GameObject brushObj;
 			brushObj=(GameObject)Instantiate(brushEntity); //Paint a brush
 			brushObj.GetComponent<SpriteRenderer>().color=brushColor; //Set the brush color
-			brushColor.a=brushSize*2.0f; // Brushes have alpha to have a merging effect when painted over.
+			brushColor.a=brushSize*2.0f;// Brushes have alpha to have a merging effect when painted over.
 			brushObj.transform.parent=brushContainer.transform; //Add the brush to our container to be wiped later
 			brushObj.transform.localPosition=uvWorldPosition; //The position of the brush (in the UVMap)
 			brushObj.transform.localScale=Vector3.one*brushSize;//The size of the brush
@@ -39,7 +54,7 @@ public class NoiseMapPainter : MonoBehaviour {
 		brushCounter++; //Add to the max brushes
 		if (brushCounter >= MAX_BRUSH_COUNT) { //If we reach the max brushes available, flatten the texture and clear the brushes
 			brushCursor.SetActive (false);
-			saving=true;
+			//saving=true;
 			Invoke("SaveTexture",0.1f);
 
 		}
@@ -75,7 +90,7 @@ public class NoiseMapPainter : MonoBehaviour {
 
 	}
 	//Sets the base material with a our canvas texture, then removes all our brushes
-	void SaveTexture(){		
+	void SaveTexture() {		
 		brushCounter=0;
 		System.DateTime date = System.DateTime.Now;
 		RenderTexture.active = canvasTexture;
@@ -89,6 +104,7 @@ public class NoiseMapPainter : MonoBehaviour {
 		}
 		//StartCoroutine ("SaveTextureToFile"); //Do you want to save the texture? This is your method!
 		Invoke ("ShowCursor", 0.1f);
+		defaultHeightMap.SetActive (false);
 	}
 	//Show again the user cursor (To avoid saving it to the texture)
 	void ShowCursor(){	
